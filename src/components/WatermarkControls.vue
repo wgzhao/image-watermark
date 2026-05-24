@@ -10,8 +10,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'file-selected': [File]
-  refresh: []
-  clear: []
 }>()
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
@@ -182,25 +180,6 @@ function toggleAdvanced() {
           <span>字号：{{ options.size.toFixed(2) }}</span>
           <input v-model.number="options.size" type="range" min="0.5" max="3" step="0.05" />
         </label>
-      </div>
-
-      <div class="actions">
-        <label class="checkbox">
-          <input v-model="options.autoRefresh" type="checkbox" />
-          <span>实时刷新</span>
-        </label>
-
-        <button
-          type="button"
-          :disabled="options.autoRefresh || !props.previewReady"
-          @click="emit('refresh')"
-        >
-          刷新
-        </button>
-
-        <button type="button" class="ghost-button" :disabled="!props.previewReady" @click="emit('clear')">
-          清空图片
-        </button>
       </div>
     </div>
   </div>

@@ -5,5 +5,4 @@ export interface WatermarkOptions {
   angle: number
   space: number
   size: number
-  autoRefresh: boolean
 }

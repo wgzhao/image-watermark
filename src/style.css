@@ -152,6 +152,13 @@ button {
   margin-bottom: 18px;
 }
 
+.preview-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .panel-heading h2 {
   margin: 0;
   font-size: 20px;
@@ -445,13 +452,24 @@ button {
   box-shadow: none !important;
 }
 
-.download-button {
+.download-button,
+.clear-button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
   border-radius: 999px !important;
   line-height: 1;
+}
+
+.clear-button__icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.clear-button__label {
+  font-size: 13px;
 }
 
 .download-button__icon {
@@ -667,7 +685,13 @@ canvas {
     align-items: start;
   }
 
-  .download-button {
+  .preview-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .download-button,
+  .clear-button {
     padding: 8px 10px;
   }
 
@@ -707,7 +731,12 @@ canvas {
     font-size: 15px;
   }
 
-  .download-button__label {
+  .download-button__label,
+  .clear-button__label {
     display: none;
+  }
+
+  .clear-button {
+    padding: 8px 10px;
   }
 }

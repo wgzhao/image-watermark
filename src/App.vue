@@ -12,7 +12,6 @@ const options = reactive<WatermarkOptions>({
   angle: 45,
   space: 4,
   size: 1.15,
-  autoRefresh: true,
 })
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
@@ -41,18 +40,7 @@ watch(
     () => options.size,
   ],
   () => {
-    if (options.autoRefresh) {
-      refreshPreview()
-    }
-  },
-)
-
-watch(
-  () => options.autoRefresh,
-  (enabled) => {
-    if (enabled) {
-      refreshPreview()
-    }
+    refreshPreview()
   },
 )
 </script>
@@ -76,21 +64,27 @@ watch(
             v-model:options="options"
             :preview-ready="previewReady"
             @file-selected="onFileSelected"
-            @refresh="refreshPreview"
-            @clear="clearImage"
           />
         </div>
 
         <div class="tool-card tool-card--preview">
           <div class="panel-heading preview-heading">
             <h2>实时预览与下载</h2>
-            <button v-if="previewReady" type="button" class="ghost-button download-button" @click="downloadCanvas">
-              <svg viewBox="0 0 24 24" class="download-button__icon" aria-hidden="true">
-                <path d="M12 3v9m0 0 3.5-3.5M12 12 8.5 8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M5 15.5V17a2.5 2.5 0 0 0 2.5 2.5h9A2.5 2.5 0 0 0 19 17v-1.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-              </svg>
-              <span class="download-button__label">下载</span>
-            </button>
+            <div class="preview-actions" v-if="previewReady">
+              <button type="button" class="ghost-button clear-button" @click="clearImage">
+                <svg viewBox="0 0 24 24" class="clear-button__icon" aria-hidden="true">
+                  <path d="M7 7l10 10M17 7 7 17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+                </svg>
+                <span class="clear-button__label">清空</span>
+              </button>
+              <button type="button" class="ghost-button download-button" @click="downloadCanvas">
+                <svg viewBox="0 0 24 24" class="download-button__icon" aria-hidden="true">
+                  <path d="M12 3v9m0 0 3.5-3.5M12 12 8.5 8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M5 15.5V17a2.5 2.5 0 0 0 2.5 2.5h9A2.5 2.5 0 0 0 19 17v-1.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                </svg>
+                <span class="download-button__label">下载</span>
+              </button>
+            </div>
           </div>
 
           <CanvasPreview
