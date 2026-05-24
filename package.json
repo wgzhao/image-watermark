@@ -1,0 +1,24 @@
+{
+  "name": "image-watermark",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "纯浏览器端处理，不保留用户信息",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11"
+  },
+  "packageManager": "pnpm@10.5.2+sha1.ca68c0441df195b7e2992f1d1cb12fb731f82d78"
+}
