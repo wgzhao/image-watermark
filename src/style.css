@@ -464,6 +464,39 @@ button {
   font-size: 13px;
 }
 
+.control-advanced {
+  display: none;
+  gap: 16px;
+}
+
+.control-advanced.control-advanced--open {
+  display: grid;
+}
+
+.params-toggle {
+  display: inline-flex;
+  align-self: flex-end;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.92);
+  color: #334155;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.params-toggle__icon {
+  width: 18px;
+  height: 18px;
+}
+
+.params-toggle--active {
+  background: #111827;
+  color: #ffffff;
+}
+
 .preview-panel {
   margin-top: 4px;
 }
@@ -536,6 +569,11 @@ canvas {
     padding: 12px 10px 18px;
   }
 
+  .params-toggle {
+    width: 38px;
+    height: 38px;
+  }
+
   .tool-panel {
     gap: 12px;
   }
@@ -559,10 +597,10 @@ canvas {
   }
 
   .upload-zone {
-    min-height: 150px;
-    padding: 14px 14px;
-    gap: 10px;
-    border-radius: 20px;
+    min-height: 108px;
+    padding: 10px 10px;
+    gap: 8px;
+    border-radius: 18px;
   }
 
   .upload-zone__visual {
@@ -661,8 +699,8 @@ canvas {
   }
 
   .upload-zone {
-    min-height: 140px;
-    padding: 12px 12px;
+    min-height: 108px;
+    padding: 10px 10px;
   }
 
   .upload-zone__title {

@@ -16,6 +16,7 @@ const emit = defineEmits<{
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const isDragging = ref(false)
+const showAdvanced = ref(false)
 let dragDepth = 0
 
 function isSupportedImage(file: File) {
@@ -91,6 +92,10 @@ function onZoneKeydown(event: KeyboardEvent) {
     openFilePicker()
   }
 }
+
+function toggleAdvanced() {
+  showAdvanced.value = !showAdvanced.value
+}
 </script>
 
 <template>
@@ -132,55 +137,71 @@ function onZoneKeydown(event: KeyboardEvent) {
       </div>
     </div>
 
+    <button
+      type="button"
+      class="params-toggle"
+      :class="{ 'params-toggle--active': showAdvanced }"
+      :aria-expanded="showAdvanced"
+      aria-label="显示或隐藏水印样式"
+      @click="toggleAdvanced"
+    >
+      <svg viewBox="0 0 24 24" class="params-toggle__icon" aria-hidden="true">
+        <path d="M7 7l10 10" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" />
+        <path d="M13 7h4v4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+
     <label class="field">
       <span>水印文字</span>
       <input v-model="options.text" type="text" maxlength="30" placeholder="请输入文字" />
     </label>
 
-    <div class="grid">
-      <label class="range-card">
-        <span>颜色</span>
-        <input v-model="options.color" type="color" />
-      </label>
+    <div class="control-advanced" :class="{ 'control-advanced--open': showAdvanced }">
+      <div class="grid">
+        <label class="range-card">
+          <span>颜色</span>
+          <input v-model="options.color" type="color" />
+        </label>
 
-      <label class="range-card">
-        <span>透明度：{{ options.alpha.toFixed(2) }}</span>
-        <input v-model.number="options.alpha" type="range" min="0" max="1" step="0.05" />
-      </label>
+        <label class="range-card">
+          <span>透明度：{{ options.alpha.toFixed(2) }}</span>
+          <input v-model.number="options.alpha" type="range" min="0" max="1" step="0.05" />
+        </label>
 
-      <label class="range-card">
-        <span>角度：{{ options.angle }}°</span>
-        <input v-model.number="options.angle" type="range" min="-90" max="90" step="3" />
-      </label>
+        <label class="range-card">
+          <span>角度：{{ options.angle }}°</span>
+          <input v-model.number="options.angle" type="range" min="-90" max="90" step="3" />
+        </label>
 
-      <label class="range-card">
-        <span>间隔：{{ options.space.toFixed(1) }}</span>
-        <input v-model.number="options.space" type="range" min="1" max="8" step="0.2" />
-      </label>
+        <label class="range-card">
+          <span>间隔：{{ options.space.toFixed(1) }}</span>
+          <input v-model.number="options.space" type="range" min="1" max="8" step="0.2" />
+        </label>
 
-      <label class="range-card">
-        <span>字号：{{ options.size.toFixed(2) }}</span>
-        <input v-model.number="options.size" type="range" min="0.5" max="3" step="0.05" />
-      </label>
-    </div>
+        <label class="range-card">
+          <span>字号：{{ options.size.toFixed(2) }}</span>
+          <input v-model.number="options.size" type="range" min="0.5" max="3" step="0.05" />
+        </label>
+      </div>
 
-    <div class="actions">
-      <label class="checkbox">
-        <input v-model="options.autoRefresh" type="checkbox" />
-        <span>实时刷新</span>
-      </label>
+      <div class="actions">
+        <label class="checkbox">
+          <input v-model="options.autoRefresh" type="checkbox" />
+          <span>实时刷新</span>
+        </label>
 
-      <button
-        type="button"
-        :disabled="options.autoRefresh || !props.previewReady"
-        @click="emit('refresh')"
-      >
-        刷新
-      </button>
+        <button
+          type="button"
+          :disabled="options.autoRefresh || !props.previewReady"
+          @click="emit('refresh')"
+        >
+          刷新
+        </button>
 
-      <button type="button" class="ghost-button" :disabled="!props.previewReady" @click="emit('clear')">
-        清空图片
-      </button>
+        <button type="button" class="ghost-button" :disabled="!props.previewReady" @click="emit('clear')">
+          清空图片
+        </button>
+      </div>
     </div>
   </div>
 </template>
