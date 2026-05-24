@@ -18,7 +18,7 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.1.4",
     "typescript": "^5.6.3",
-    "vite": "^5.4.11"
+    "vite": "^6.0.0"
   },
   "packageManager": "pnpm@10.5.2+sha1.ca68c0441df195b7e2992f1d1cb12fb731f82d78"
 }
