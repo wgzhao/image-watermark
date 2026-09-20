@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
+import { useRegisterSW } from 'virtual:pwa-register/vue'
 import CanvasPreview from './components/CanvasPreview.vue'
 import WatermarkControls from './components/WatermarkControls.vue'
 import { useWatermarkCanvas } from './composables/useWatermarkCanvas'
@@ -37,6 +38,37 @@ const outputSizeLabel = computed(() => {
   return `${(kb / 1024).toFixed(1)} MB`
 })
 const supportsShare = typeof navigator !== 'undefined' && !!navigator.canShare
+
+// 新版本就绪时不自动刷新（registerType: 'prompt'），交给用户挑时机。
+// 原因：用户往往正载着图片、调好参数准备导出，此时 reload 会丢掉当前工作。
+const { needRefresh, offlineReady, updateServiceWorker } = useRegisterSW()
+const pwaDismissed = ref(false)
+
+const pwaNotice = computed(() => {
+  if (pwaDismissed.value) return null
+  if (needRefresh.value) {
+    return {
+      title: '有新版本可用',
+      text: '刷新后生效。刷新会清空当前已载入的图片，图片本身从未离开你的设备。',
+    }
+  }
+  if (offlineReady.value) {
+    return {
+      title: '已可离线使用',
+      text: '以后没有网络也能打开本工具，图片依然只在本地处理。',
+    }
+  }
+  return null
+})
+
+async function applyUpdate() {
+  // 通知等待中的 SW 立即接管，然后重载页面
+  await updateServiceWorker()
+}
+
+function dismissPwaNotice() {
+  pwaDismissed.value = true
+}
 
 watchEffect(() => {
   canvasRef.value = previewRef.value?.canvasEl ?? null
@@ -186,5 +218,27 @@ onMounted(() => {
         </div>
       </section>
     </section>
+
+    <Transition name="pwa-toast">
+      <div v-if="pwaNotice" class="pwa-toast" role="status" aria-live="polite">
+        <div class="pwa-toast__body">
+          <p class="pwa-toast__title">{{ pwaNotice.title }}</p>
+          <p class="pwa-toast__text">{{ pwaNotice.text }}</p>
+        </div>
+        <div class="pwa-toast__actions">
+          <button
+            v-if="needRefresh"
+            type="button"
+            class="pwa-toast__primary"
+            @click="applyUpdate"
+          >
+            立即刷新
+          </button>
+          <button type="button" class="pwa-toast__dismiss" @click="dismissPwaNotice">
+            {{ needRefresh ? '稍后' : '知道了' }}
+          </button>
+        </div>
+      </div>
+    </Transition>
   </main>
 </template>

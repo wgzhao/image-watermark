@@ -1014,3 +1014,106 @@ canvas {
     padding: 10px 12px;
   }
 }
+
+/* PWA 更新 / 离线可用提示条 */
+.pwa-toast {
+  position: fixed;
+  z-index: 60;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: min(560px, calc(100vw - 32px));
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.96));
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.16);
+  backdrop-filter: blur(12px);
+}
+
+.pwa-toast__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.pwa-toast__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.pwa-toast__text {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.pwa-toast__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.pwa-toast__primary,
+.pwa-toast__dismiss {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pwa-toast__primary {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: #ffffff;
+}
+
+.pwa-toast__primary:hover {
+  background: #4f46e5;
+  border-color: #4f46e5;
+}
+
+.pwa-toast__dismiss {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(15, 23, 42, 0.08);
+  color: #334155;
+}
+
+.pwa-toast__dismiss:hover {
+  background: rgba(248, 250, 252, 1);
+}
+
+.pwa-toast-enter-active,
+.pwa-toast-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* 注意保留 translateX(-50%)，否则动画期间会跳到屏幕左侧 */
+.pwa-toast-enter-from,
+.pwa-toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 12px);
+}
+
+@media (max-width: 640px) {
+  .pwa-toast {
+    bottom: 16px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .pwa-toast__actions {
+    justify-content: flex-end;
+  }
+}
