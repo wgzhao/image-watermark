@@ -160,6 +160,39 @@ To verify a build, don't trust the plugin's own summary — read `dist/sw.js` an
 served as `text/javascript` and not swallowed by the SPA fallback (it isn't: real files take precedence over
 `not_found_handling`, but this is worth re-checking if the assets config ever changes).
 
+### Install hint
+
+`src/composables/useInstallPrompt.ts` drives the "install this app" notice, rendered through the same
+`.pwa-toast`. Three invariants that are easy to break:
+
+- **The two detection branches are mutually exclusive by browser engine, which is why there is no grace
+  timer.** Chromium is detected by *the event firing*, not by UA — `beforeinstallprompt` is a positive,
+  unforgeable signal that a real install handle exists. Safari is detected by a positive UA match. Since
+  Safari never fires the event and Chromium never matches the Safari predicate, a "wait Ns to see if the
+  event arrives" timer is dead code. Don't add one.
+- **`preventDefault()` on `beforeinstallprompt` is conditional and irreversible.** It can't be undone for
+  that event instance, and `prompt()` needs a user gesture, so there is no programmatic recovery. The
+  handler therefore checks "am I actually going to show my own UI?" *before* cancelling — a user in cooldown
+  or already installed gets no `preventDefault`, leaving Chrome's own install affordance intact. **Never call
+  it "to be safe."** (Note: the folk claim that cancelling *permanently disables* installation traces to
+  Chrome 68–75's mini-infobar and is probably outdated; the precondition rule is still correct, just for the
+  narrower reason above.)
+- **The 30-day cooldown applies to the install hint only.** The update and offline notices stay
+  session-scoped (`pwaDismissed`). Making those persist would mean one "稍后" silently suppresses every
+  future version update — the same class of mistake the `registerType: 'prompt'` note guards against.
+
+`platform` prefers the event over the UA match when both are available, so a browser that both fires the
+event and has a Safari-like UA still gets the working install button rather than instructions it can't use.
+
+Platform copy lives in `App.vue`'s `installCopy` computed, not in the composable. The macOS wording carries a
+"需 macOS 14" hedge because Add to Dock requires Sonoma while Safari 17 also ships on Ventura/Monterey — and
+macOS version is not recoverable from the UA (it's frozen at `10_15_7`). Don't "clean up" that hedge.
+
+Testing the install hint needs a real engine per branch: UA spoofing in Chrome does **not** reach the Safari
+branches, because Chrome fires the event regardless of the claimed UA. Block the manifest at the network
+layer (`Network.setBlockedURLs(['*manifest.webmanifest*'])`) to make Chrome non-installable, which is how you
+reach and verify the Safari copy.
+
 ## Deployment
 
 Cloudflare Workers with `@cloudflare/vite-plugin`. Config in `wrangler.jsonc`: `not_found_handling:
