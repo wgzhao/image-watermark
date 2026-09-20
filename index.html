@@ -8,6 +8,17 @@
       name="description"
       content="纯浏览器端处理，不保留用户信息。"
     />
+
+    <!-- PWA：manifest 链接由 vite-plugin-pwa 自动注入 -->
+    <meta name="theme-color" content="#6366f1" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+
+    <!-- iOS 不完全读 manifest，这些要单独写 -->
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="图片水印" />
   </head>
   <body>
     <div id="app"></div>
