@@ -9,3 +9,6 @@ package-lock.json
 !.dev.vars.example
 .env*
 !.env.example
+
+# Claude Code local settings
+.claude/settings.local.json
