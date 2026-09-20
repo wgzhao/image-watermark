@@ -1040,10 +1040,21 @@ canvas {
 }
 
 .pwa-toast__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
   font-size: 14px;
   font-weight: 600;
   color: #111827;
+}
+
+/* 仅 iOS 引导显示：示意要找的那个「分享」按钮 */
+.pwa-toast__icon {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: #6366f1;
 }
 
 .pwa-toast__text {
@@ -1064,11 +1075,13 @@ canvas {
 .pwa-toast__dismiss {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 8px 14px;
   border-radius: 999px;
   border: 1px solid transparent;
   font-size: 13px;
   line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -1115,5 +1128,12 @@ canvas {
 
   .pwa-toast__actions {
     justify-content: flex-end;
+  }
+
+  /* 按钮原本高约 29px，低于移动端 44px 的点按下限。
+     安装引导的主按钮是这一步唯一的落点，值得单独抬一手。 */
+  .pwa-toast__primary,
+  .pwa-toast__dismiss {
+    min-height: 44px;
   }
 }

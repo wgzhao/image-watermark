@@ -3,6 +3,7 @@ import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
 import { useRegisterSW } from 'virtual:pwa-register/vue'
 import CanvasPreview from './components/CanvasPreview.vue'
 import WatermarkControls from './components/WatermarkControls.vue'
+import { useInstallPrompt } from './composables/useInstallPrompt'
 import { useWatermarkCanvas } from './composables/useWatermarkCanvas'
 import type { WatermarkOptions } from './types/watermark'
 
@@ -44,20 +45,78 @@ const supportsShare = typeof navigator !== 'undefined' && !!navigator.canShare
 const { needRefresh, offlineReady, updateServiceWorker } = useRegisterSW()
 const pwaDismissed = ref(false)
 
-const pwaNotice = computed(() => {
-  if (pwaDismissed.value) return null
-  if (needRefresh.value) {
+interface PwaNotice {
+  kind: 'update' | 'install' | 'offline'
+  title: string
+  text: string
+  dismissLabel: string
+  /** 有主按钮才渲染。Safari 无法用代码触发安装，所以只有 Chromium 有 */
+  primaryLabel?: string
+  showShareIcon?: boolean
+}
+
+const {
+  platform: installPlatform,
+  promptInstall,
+  dismiss: dismissInstall,
+} = useInstallPrompt()
+
+// 安装引导的文案随平台变化：Safari 无法用代码触发安装，只能指路
+const installCopy = computed(() => {
+  switch (installPlatform.value) {
+    case 'ios-safari':
+      return {
+        title: '安装到主屏幕',
+        text: '点浏览器底部的「分享」按钮，再选「添加到主屏幕」。装好后可离线打开，图片依然只在本地处理。',
+        dismissLabel: '知道了',
+        showShareIcon: true,
+      }
+    case 'macos-safari':
+      return {
+        title: '安装到程序坞',
+        // 标注版本要求：Safari 17 也装在 Ventura/Monterey 上，而那里没有
+        // 添加到程序坞。macOS 版本不在 UA 里，检测不出来，只能把话说全。
+        text: '在菜单栏选「文件」→「添加到程序坞」（需 macOS 14 或更新版本）。装好后可离线打开，图片依然只在本地处理。',
+        dismissLabel: '知道了',
+      }
+    case 'chromium':
+      return {
+        title: '安装本应用',
+        text: '安装后可离线打开，图片依然只在本地处理。',
+        primaryLabel: '安装',
+        dismissLabel: '稍后',
+      }
+    default:
+      return null
+  }
+})
+
+// 一次只显示一条。更新提示优先级最高——它更有时效性，错过就要等下个版本。
+const pwaNotice = computed<PwaNotice | null>(() => {
+  if (!pwaDismissed.value && needRefresh.value) {
     return {
+      kind: 'update',
       title: '有新版本可用',
       text: '刷新后生效。刷新会清空当前已载入的图片，图片本身从未离开你的设备。',
+      primaryLabel: '立即刷新',
+      dismissLabel: '稍后',
     }
   }
-  if (offlineReady.value) {
+
+  const copy = installCopy.value
+  if (copy) {
+    return { kind: 'install', ...copy }
+  }
+
+  if (!pwaDismissed.value && offlineReady.value) {
     return {
+      kind: 'offline',
       title: '已可离线使用',
       text: '以后没有网络也能打开本工具，图片依然只在本地处理。',
+      dismissLabel: '知道了',
     }
   }
+
   return null
 })
 
@@ -66,7 +125,20 @@ async function applyUpdate() {
   await updateServiceWorker()
 }
 
-function dismissPwaNotice() {
+function onNoticePrimary() {
+  if (pwaNotice.value?.kind === 'update') {
+    void applyUpdate()
+  } else if (pwaNotice.value?.kind === 'install') {
+    void promptInstall()
+  }
+}
+
+function onNoticeDismiss() {
+  // 安装引导的忽略要持久化（30 天冷却），更新/离线提示只忽略当前会话
+  if (pwaNotice.value?.kind === 'install') {
+    dismissInstall()
+    return
+  }
   pwaDismissed.value = true
 }
 
@@ -222,20 +294,44 @@ onMounted(() => {
     <Transition name="pwa-toast">
       <div v-if="pwaNotice" class="pwa-toast" role="status" aria-live="polite">
         <div class="pwa-toast__body">
-          <p class="pwa-toast__title">{{ pwaNotice.title }}</p>
+          <p class="pwa-toast__title">
+            <svg
+              v-if="pwaNotice.showShareIcon"
+              class="pwa-toast__icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                d="M12 3v12m0-12L8 7m4-4 4 4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M6 12H5a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2h-1"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              />
+            </svg>
+            {{ pwaNotice.title }}
+          </p>
           <p class="pwa-toast__text">{{ pwaNotice.text }}</p>
         </div>
         <div class="pwa-toast__actions">
           <button
-            v-if="needRefresh"
+            v-if="pwaNotice.primaryLabel"
             type="button"
             class="pwa-toast__primary"
-            @click="applyUpdate"
+            @click="onNoticePrimary"
           >
-            立即刷新
+            {{ pwaNotice.primaryLabel }}
           </button>
-          <button type="button" class="pwa-toast__dismiss" @click="dismissPwaNotice">
-            {{ needRefresh ? '稍后' : '知道了' }}
+          <button type="button" class="pwa-toast__dismiss" @click="onNoticeDismiss">
+            {{ pwaNotice.dismissLabel }}
           </button>
         </div>
       </div>
