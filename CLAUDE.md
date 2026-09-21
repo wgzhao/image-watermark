@@ -112,6 +112,21 @@ Image loading and cleanup:
 One dead relic: the composable's `hasWatermarkText` is a `computed(() => true)` stub that `App.vue` overrides
 with its own real one. Nothing consumes the stub — don't wire anything to it.
 
+## 拍照 is a mobile-only button
+
+`capture="environment"` is a *browser-engine* capability, not an input-device one: desktop browsers (including
+touchscreen laptops) ignore it and fall back to an ordinary file picker, which just duplicates the upload zone
+above it. So `WatermarkControls.vue` hides the button when `useMobileDevice()` reports desktop.
+
+That predicate (`composables/useMobileDevice.ts`) unions two signals whose failure modes point in opposite
+directions — `(pointer: coarse)`, which flips to `fine` on a tablet with a keyboard case attached, and a mobile
+UA match, which "request desktop website" erases — and deliberately errs toward *mobile*: a false positive costs
+a redundant button, a false negative costs phone users the camera. Two things not to "fix":
+
+- `(any-pointer: coarse)` would match touchscreen laptops, where `capture` is just as dead.
+- Don't make the check reactive. A trackpad connecting mid-session would then *remove* the button on an iPad —
+  the wrong direction, and the one case the UA branch exists to cover.
+
 ## PWA
 
 Config lives in `vite.config.ts` under `VitePWA()`. The app is an unusually easy PWA case: it has **no
