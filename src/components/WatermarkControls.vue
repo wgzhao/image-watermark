@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref } from 'vue'
+import { useMobileDevice } from '../composables/useMobileDevice'
 import type { WatermarkOptions } from '../types/watermark'
 
 const TEXT_PRESETS = [
@@ -34,6 +35,9 @@ const cameraInputRef = ref<HTMLInputElement | null>(null)
 const isDragging = ref(false)
 const showAdvanced = ref(false)
 let dragDepth = 0
+
+// 桌面端 input[capture] 不会调起相机，只会退化成文件选择器 —— 与上方上传区重复
+const isMobileDevice = useMobileDevice()
 
 // Restore last used watermark text
 onMounted(() => {
@@ -224,6 +228,7 @@ onBeforeUnmount(() => {
         @change="onFileChange"
       />
       <button
+        v-if="isMobileDevice"
         type="button"
         class="camera-button"
         aria-label="拍照上传"
